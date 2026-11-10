@@ -1,12 +1,8 @@
-import type { Metadata } from "next";
+import { siteMetadata } from "@/lib/site-metadata";
 import Link from "next/link";
 import { Gift } from "lucide-react";
 import "./globals.css";
-export const metadata: Metadata = {
-  title: "Familienwichteln",
-  description: "Eure Wichtelrunde mit Wunschlisten.",
-  robots: { index: false, follow: false },
-};
+export const metadata = siteMetadata;
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {

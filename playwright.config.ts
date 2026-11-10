@@ -8,7 +8,11 @@ export default defineConfig({
   webServer: {
     command:
       "node --env-file=.env scripts/migrate.mjs && npm run dev -- --hostname 127.0.0.1 --port 3100",
-    env: { DATABASE_URL: "file:./e2e.db", NEXT_DIST_DIR: ".next-e2e" },
+    env: {
+      DATABASE_URL: "file:./e2e.db",
+      NEXT_DIST_DIR: ".next-e2e",
+      SITE_URL: "http://127.0.0.1:3100",
+    },
     url: "http://127.0.0.1:3100",
     reuseExistingServer: false,
     timeout: 120000,

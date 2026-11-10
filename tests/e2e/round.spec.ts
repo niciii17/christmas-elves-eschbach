@@ -102,14 +102,12 @@ test("Familie erstellt eine Runde, tritt bei, wichtelt und kehrt per Link zurüc
     recovery.getByRole("heading", { name: "Ein besonderes Buch" }),
   ).toBeVisible();
   await expect(recovery.locator("body")).toHaveJSProperty("scrollWidth", 390);
-  const bookCard = recovery
-    .locator(".own-wish")
-    .filter({
-      has: recovery.getByRole("heading", {
-        name: "Ein besonderes Buch",
-        exact: true,
-      }),
-    });
+  const bookCard = recovery.locator(".own-wish").filter({
+    has: recovery.getByRole("heading", {
+      name: "Ein besonderes Buch",
+      exact: true,
+    }),
+  });
   await bookCard.getByText("Bearbeiten", { exact: true }).click();
   await bookCard
     .getByLabel("Dein Wunsch", { exact: true })

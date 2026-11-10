@@ -128,3 +128,18 @@ Keine Analysewerkzeuge, E-Mails oder extern geladenen Schriftarten. Notwendige C
 Lokale Daten: Server beenden, `dev.db` samt eventuellen `-wal`-/`-shm`-Dateien entfernen, dann `npm run db:migrate` ausführen.
 
 Produktion: Turso-Backupmöglichkeiten nutzen. Einzelne Gruppen können über eine **parametrisierte** Datenbankabfrage `DELETE FROM "Group" WHERE id = ?` gelöscht werden; bei aktivierter Foreign-Key-Unterstützung werden Mitglieder, Wünsche, Zugänge und Zuordnungen mit entfernt. Vor manuellen Löschungen ein Backup erstellen. Tokens und produktive Daten niemals in Diagnoseausgaben oder Screenshots teilen.
+
+## Linkvorschau und Favicon
+
+Open Graph und Twitter verwenden dieselbe allgemeine Vorschau mit dem Geschenk der Startseite und „«Neue Runde. Neue Chance auf etwas Brauchbares.»“. Gruppennamen, Teilnehmer, Wünsche und Zuordnungen erscheinen nicht in den Metadaten. Das Geschenk dient auch als Favicon und Apple-Touch-Icon.
+
+Auf Vercel wird die Bild-Domain automatisch aus den Deployment-Variablen ermittelt. Bei einer eigenen Domain `SITE_URL=https://deine-domain.example` für Production setzen und erneut deployen. Lokal ist der Standard `http://localhost:3000`; für einen anderen Port `SITE_URL` anpassen. Öffentlich erreichbare HTTPS-URLs sind für echte Messenger-Vorschauen nötig; localhost ist nur lokal erreichbar.
+
+Nach Änderungen an der Geschenkzeichnung lassen sich die eingecheckten Bilddateien neu erzeugen:
+
+```bash
+npx playwright install chromium
+node scripts/generate-brand-assets.mjs
+```
+
+Die Bildgenerierung liest ausschließlich die statische Illustration und CSS. Sie benötigt weder Datenbank noch App-Server und läuft nicht beim Deployment. Messenger können alte Vorschauen zwischenspeichern.
