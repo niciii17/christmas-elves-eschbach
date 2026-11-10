@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "sqlite"
+}
+model Group {
+  id String @id @default(cuid())
+  name String
+  description String @default("")
+  budget String @default("")
+  date String @default("")
+  inviteHash String @unique
+  drawn Boolean @default(false)
+  revision Int @default(0)
+  createdAt DateTime @default(now())
+  members Member[]
+  exclusions Exclusion[]
+}
+model Member {
+  id String @id @default(cuid())
+  groupId String
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  name String
+  nameKey String
+  organizer Boolean @default(false)
+  createdAt DateTime @default(now())
+  wishes Wish[]
+  tokens AccessToken[]
+  giving Assignment? @relation("giver")
+  receiving Assignment? @relation("recipient")
+  @@unique([groupId, nameKey])
+}
+model Wish {
+  id String @id @default(cuid())
+  memberId String
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  title String
+  description String @default("")
+  url String @default("")
+  createdAt DateTime @default(now())
+}
+model AccessToken {
+  id String @id @default(cuid())
+  hash String @unique
+  kind String
+  expiresAt DateTime?
+  memberId String
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  @@index([memberId])
+}
+model Exclusion {
+  id String @id @default(cuid())
+  groupId String
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  firstId String
+  secondId String
+  @@unique([groupId, firstId, secondId])
+}
+model Assignment {
+  id String @id @default(cuid())
+  giverId String @unique
+  giver Member @relation("giver", fields: [giverId], references: [id], onDelete: Cascade)
+  recipientId String @unique
+  recipient Member @relation("recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+}
