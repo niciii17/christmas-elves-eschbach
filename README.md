@@ -132,7 +132,7 @@ Produktion: Turso-Backupmöglichkeiten nutzen. Einzelne Gruppen können über ei
 
 ## Linkvorschau und Favicon
 
-Open Graph und Twitter verwenden dieselbe allgemeine Vorschau mit dem Geschenk der Startseite und „«Neue Runde. Neue Chance auf etwas Brauchbares.»“. Gruppennamen, Teilnehmer, Wünsche und Zuordnungen erscheinen nicht in den Metadaten. Das Geschenk dient auch als Favicon und Apple-Touch-Icon.
+Open Graph und Twitter verwenden dasselbe Vorschaubild mit Geschenk und Spruch der Startseite („Manche Geschenke wünscht man sich. Andere bekommt man einfach so.“). Die Metadatenbeschreibung bleibt „«Neue Runde. Neue Chance auf etwas Brauchbares.»“. Gruppennamen, Teilnehmer, Wünsche und Zuordnungen erscheinen nicht in den Metadaten. Das Geschenk dient auch als Favicon und Apple-Touch-Icon.
 
 Auf Vercel wird die Bild-Domain automatisch aus den Deployment-Variablen ermittelt. Bei einer eigenen Domain `SITE_URL=https://deine-domain.example` für Production setzen und erneut deployen. Lokal ist der Standard `http://localhost:3000`; für einen anderen Port `SITE_URL` anpassen. Öffentlich erreichbare HTTPS-URLs sind für echte Messenger-Vorschauen nötig; localhost ist nur lokal erreichbar.
 

@@ -16,11 +16,19 @@ if (!illustration || /[{}]/.test(illustration))
   throw new Error(
     "The landing-page illustration has changed; update the asset renderer.",
   );
+const slogan = source
+  .match(/<FestiveQuote hero>([\s\S]*?)<\/FestiveQuote>/)?.[1]
+  .replace(/\{\s*" "\s*\}/g, " ");
+if (!slogan || /[{}]/.test(slogan))
+  throw new Error(
+    "The landing-page slogan has changed; update the asset renderer.",
+  );
 const css = (
   await readFile(new URL("../src/app/globals.css", import.meta.url), "utf8")
 ).replace(/@import\s+"tailwindcss";/, "");
 const browser = await chromium.launch();
 let gift;
+let socialPreview;
 try {
   const page = await browser.newPage({
     viewport: { width: 1000, height: 600 },
@@ -41,6 +49,21 @@ try {
       height: halo.height + 44,
     },
   });
+  await page.setViewportSize({ width: 1200, height: 630 });
+  await page.setContent(`<html lang="de"><head><meta charset="utf-8"><style>${css}
+    body{margin:0;background:var(--cream)}
+    .share-card{width:1200px;height:630px;position:relative;overflow:hidden;background:var(--cream)}
+    .share-card::before,.share-card::after{content:"";position:absolute;left:76px;right:76px;height:1px;background:var(--line)}
+    .share-card::before{top:52px}.share-card::after{bottom:52px}
+    .share-title{position:absolute;left:80px;top:92px;font:600 14px Arial,sans-serif;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+    .share-copy{position:absolute;left:80px;top:157px;width:620px}
+    .share-copy .hero-quote{font-size:48px;line-height:1.15;max-width:540px;margin:0}
+    .share-card .hero-art{position:absolute;left:710px;top:116px;width:450px;height:400px}
+  </style></head><body><div class="share-card"><div class="share-title">Familienwichteln</div><div class="share-copy festive-quote"><p class="hero-quote">${slogan}</p></div>${illustration}</div></body></html>`);
+  await page.evaluate(() => document.fonts.ready);
+  socialPreview = await page
+    .locator(".share-card")
+    .screenshot({ scale: "css" });
 } finally {
   await browser.close();
 }
@@ -49,21 +72,7 @@ const root = new URL("../", import.meta.url);
 await mkdir(new URL("public/", root), { recursive: true });
 await writeFile(new URL("public/gift.png", root), gift);
 
-const canvas =
-  Buffer.from(`<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
-<rect width="1200" height="630" fill="#faf8f2"/>
-<path d="M76 68H1124M76 562H1124" stroke="#e4e6db"/>
-<text x="80" y="132" fill="#244a3b" font-family="Georgia,serif" font-size="52">Familienwichteln</text>
-<text x="80" y="270" fill="#244a3b" font-family="Georgia,serif" font-size="49">«Neue Runde.</text>
-<text x="80" y="338" fill="#244a3b" font-family="Georgia,serif" font-size="49">Neue Chance auf</text>
-<text x="80" y="406" fill="#ae554a" font-family="Georgia,serif" font-style="italic" font-size="49">etwas Brauchbares.»</text>
-<path d="M80 424H513" stroke="#d4b58a" stroke-width="2"/>
-</svg>`);
-const giftForPreview = await sharp(gift).resize(410, 410).png().toBuffer();
-await sharp(canvas)
-  .composite([{ input: giftForPreview, left: 730, top: 118 }])
-  .png()
-  .toFile(new URL("public/social-preview.png", root).pathname);
+await writeFile(new URL("public/social-preview.png", root), socialPreview);
 await sharp(gift)
   .resize(512, 512)
   .png()

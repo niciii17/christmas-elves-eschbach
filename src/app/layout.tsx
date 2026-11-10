@@ -14,7 +14,7 @@ export default function RootLayout({
             <span className="brand-icon">
               <Gift size={23} />
             </span>
-            Familien<span>wichteln</span>
+            Eschbach<span>wichtelt</span>
           </Link>
         </header>
         <main>{children}</main>

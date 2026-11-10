@@ -23,7 +23,7 @@ export default async function Home() {
     <>
       <section className="hero">
         <div className="hero-copy">
-          <h1>Familienwichteln</h1>
+          <h1>Schenken für Anfänger</h1>
           <FestiveQuote hero>
             <span>
               Manche <strong>Geschenke</strong> wünscht man sich.

@@ -14,7 +14,7 @@ const image = {
   url: "/social-preview.png",
   width: 1200,
   height: 630,
-  alt: "Familienwichteln – grünes Geschenk mit goldener Schleife. Neue Runde. Neue Chance auf etwas Brauchbares.",
+  alt: "Familienwichteln – grünes Geschenk mit goldener Schleife. Manche Geschenke wünscht man sich. Andere bekommt man einfach so.",
 };
 
 // Keep shared previews generic, including on invitation and private group routes.
