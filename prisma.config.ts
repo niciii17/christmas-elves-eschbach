@@ -1,4 +1,5 @@
 import { defineConfig } from "prisma/config";
+import { databaseConfig } from "./src/lib/database-config.mjs";
 try {
   process.loadEnvFile(".env");
 } catch {
@@ -6,5 +7,5 @@ try {
 }
 export default defineConfig({
   schema: "prisma/schema.prisma",
-  datasource: { url: process.env.DATABASE_URL || "file:./dev.db" },
+  datasource: { url: databaseConfig().url },
 });

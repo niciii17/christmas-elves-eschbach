@@ -33,9 +33,31 @@ Eigene persönliche Links können erneuert werden; bisherige Sitzungen bleiben d
 
 Vercel hat kein dauerhaft beschreibbares lokales Dateisystem. Eine lokale SQLite-Datei wäre dort kein zuverlässiger Datenspeicher. Deshalb verwendet die App in Produktion **Turso (libSQL, SQLite-kompatibel)**. Die Anwendung und das Datenmodell sind lokal und auf Vercel identisch; nur Verbindungsvariablen unterscheiden sich. Es wird kein Neon/PostgreSQL benötigt.
 
-### 1. Turso einrichten
+### 1. Turso direkt in Vercel verbinden (empfohlen)
 
-Ein Konto bei [Turso](https://turso.tech) anlegen und die [Turso CLI installieren](https://docs.turso.tech/cli/installation). Anschließend:
+Im Vercel-Projekt unter **Storage → Marketplace → Turso** eine Datenbank erstellen oder eine bestehende verbinden. Beim Verbinden die Umgebung **Production** auswählen. Die Integration setzt automatisch:
+
+```dotenv
+TURSO_DATABASE_URL="libsql://DEINE-DATENBANK.turso.io"
+TURSO_AUTH_TOKEN="DEIN-TOKEN"
+```
+
+Keine Zugangsdaten ins Repository übernehmen. `TURSO_DATABASE_URL` hat Vorrang vor `DATABASE_URL`. Bei einem benutzerdefinierten Variablenpräfix die beiden Variablen zusätzlich unter diesen exakten Namen bereitstellen.
+
+### 2. Vercel-Projekt konfigurieren und deployen
+
+1. Repository in Vercel importieren und **Next.js** sowie Node.js **24.x** auswählen. Install Command: `npm ci`.
+2. Prüfen, dass `TURSO_DATABASE_URL` und `TURSO_AUTH_TOKEN` für **Production** vorhanden sind. Kein `NEXT_PUBLIC_`-Präfix verwenden.
+3. Die eingecheckte `vercel.json` setzt den Build Command auf `npm run vercel-build`. Dieser initialisiert die Datenbank mit den versionierten Migrationen und baut anschließend die App.
+4. Nach dem Verbinden oder Ändern von Variablen **neu deployen**. Bereits laufende Deployments übernehmen neue Variablen nicht.
+
+Bereits angewandte Migrationen werden anhand ihrer Prüfsummen übersprungen. Die Prüfung und Anwendung jeder Migration erfolgt unter derselben Schreibsperre, damit parallele Builds keine Migration doppelt anwenden. Eine fehlende Verbindung, fehlende Berechtigungen oder veränderte bestehende Migration brechen den Build ab. Auf Vercel ist kein Rückfall auf eine temporäre lokale SQLite-Datei erlaubt.
+
+**Preview-Deployments:** Eine eigene Turso-Datenbank für Preview verbinden. Preview und Production dürfen nicht dieselbe Datenbank verwenden.
+
+### 3. Alternative: Turso manuell verbinden
+
+Bei einem bestehenden [Turso-Konto](https://turso.tech) die [CLI](https://docs.turso.tech/cli/installation) verwenden:
 
 ```bash
 turso auth login
@@ -44,36 +66,15 @@ turso db show familienwichteln --url
 turso db tokens create familienwichteln
 ```
 
-URL und Token nicht ins Repository übernehmen. Die URL beginnt mit `libsql://`. Aktuelle Tarifgrenzen im Turso-Konto prüfen.
+Die URL als `TURSO_DATABASE_URL` und den Token als `TURSO_AUTH_TOKEN` in Vercel hinterlegen. Eine bisher manuell gesetzte `DATABASE_URL` mit Turso-URL wird ebenfalls unterstützt. Anschließend neu deployen; die Tabellen werden automatisch angelegt.
 
-### 2. Datenbank initialisieren
-
-Erstelle lokal eine ignorierte `.env.production`:
-
-```dotenv
-DATABASE_URL="libsql://DEINE-DATENBANK.turso.io"
-TURSO_AUTH_TOKEN="DEIN-TOKEN"
-```
-
-Dann vor dem ersten Deployment ausführen:
+Für manuelle Migrationen kann lokal eine ignorierte `.env.production` mit diesen Variablen angelegt werden:
 
 ```bash
 node --env-file=.env.production scripts/migrate.mjs
 ```
 
-Der Migrationsrunner funktioniert mit lokalen SQLite-Dateien und Turso, führt Migrationen transaktional aus und speichert Prüfsummen in `_app_migrations`. Bereits angewandte Migrationen werden übersprungen. **Nicht parallel ausführen.** `prisma migrate deploy` wird für diesen Workflow nicht verwendet.
-
-### 3. Vercel einrichten
-
-1. Projekt in ein privates Git-Repository übertragen und in Vercel importieren.
-2. Framework **Next.js**, Node-Version **24.x**, Install Command `npm ci`, Build Command `npm run build`; Output Directory auf dem Next.js-Standard belassen.
-3. Unter Settings → Environment Variables `DATABASE_URL` und `TURSO_AUTH_TOKEN` aus `.env.production` für **Production** eintragen. Kein `NEXT_PUBLIC_`-Präfix: diese Werte bleiben ausschließlich auf dem Server.
-4. Eine passende Function-Region nahe der Turso-Datenbank wählen.
-5. Deployen. Für eine eigene Domain oder wechselnde Vercel-Domains die endgültige Domain zum Teilen der Links verwenden.
-
-**Preview-Deployments:** Eine zweite Turso-Datenbank (z. B. `familienwichteln-preview`) erstellen, separat migrieren und deren URL/Token ausschließlich für **Preview** hinterlegen. Preview und Production dürfen nicht dieselbe Datenbank nutzen.
-
-Nach jedem Schema-Update erst eine neue Migration gegen Preview prüfen, danach mit Backup auf Produktion anwenden und den passenden Code deployen. Migrationen laufen bewusst nicht automatisch bei jedem Vercel-Build, damit parallele Builds keine Schemaänderungen auslösen.
+`prisma migrate deploy` wird für diesen Workflow nicht verwendet. Vor künftigen Schemaänderungen Backups anlegen und neue Migrationen in Preview testen. Da Migrationen vor dem neuen Code ausgeführt werden, müssen sie mit dem noch laufenden Deployment kompatibel sein; Änderungen in getrennten Schritten ausrollen, wenn nötig.
 
 ### 4. Funktionstest nach Veröffentlichung
 
