@@ -101,6 +101,17 @@ test("Familie erstellt eine Runde, tritt bei, wichtelt und kehrt per Link zurüc
   await page.getByText("Wichtelkind aufdecken", { exact: false }).click();
   await expect(page.locator(".recipient-name")).toHaveText("Ben");
   await expect(
+    page.getByRole("button", { name: "Wichtelkind aufdecken" }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("region", { name: "Dein Wichtelkind" }),
+  ).toBeFocused();
+  await expect(page.locator(".reveal-confetti")).toBeVisible();
+  await expect(page.locator(".reveal-content")).toHaveCSS("opacity", "1");
+  await page.screenshot({ path: "test-results/reveal-celebration.png" });
+  await expect(page.locator(".reveal-confetti")).toHaveCount(0);
+
+  await expect(
     page.getByRole("heading", { name: "Ein besonderes Buch" }),
   ).toBeVisible();
   await ben.reload();
@@ -111,8 +122,21 @@ test("Familie erstellt eine Runde, tritt bei, wichtelt und kehrt per Link zurüc
     viewport: { width: 390, height: 844 },
   });
   const recovery = await recoveryContext.newPage();
+  await recovery.emulateMedia({ reducedMotion: "reduce" });
   await recovery.goto(benLink);
   await expect(recovery).toHaveURL(groupUrl);
+  const reducedReveal = recovery.getByRole("button", {
+    name: "Wichtelkind aufdecken",
+  });
+  await reducedReveal.focus();
+  await reducedReveal.press("Enter");
+  await expect(reducedReveal).toHaveCount(0);
+  await expect(
+    recovery.getByRole("region", { name: "Dein Wichtelkind" }),
+  ).toBeFocused();
+  await expect(recovery.locator(".recipient-name")).toHaveText("Anna");
+  await expect(recovery.locator(".reveal-confetti")).toHaveCount(0);
+
   await expect(
     recovery.getByRole("heading", { name: "Ein besonderes Buch" }),
   ).toBeVisible();
@@ -145,7 +169,18 @@ test("Familie erstellt eine Runde, tritt bei, wichtelt und kehrt per Link zurüc
     path: "test-results/mobile.png",
     fullPage: true,
   });
+  await expect(page.locator(".reveal-confetti")).toHaveCount(0);
   await page.screenshot({ path: "test-results/desktop.png", fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(
+    page.getByRole("region", { name: "Wunschliste", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator("body")).toHaveJSProperty("scrollWidth", 390);
+  await page.screenshot({
+    path: "test-results/recipient-mobile.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto(annaLink);
   await expect(page).toHaveURL(groupUrl);
   await page.getByText("Teilnehmer & Zugänge", { exact: true }).click();

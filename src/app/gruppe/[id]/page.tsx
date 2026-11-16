@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FestiveQuote } from "@/components/festive-quote";
+import { WichtelReveal } from "@/components/wichtel-reveal";
 import { Users, CalendarDays, Coins, ShieldCheck, Gift } from "lucide-react";
 import { db } from "@/lib/db";
 import { currentMember } from "@/lib/access";
@@ -88,15 +89,15 @@ export default async function GroupPage({
                     Mein <em>Beileid</em> an beide.
                   </span>
                 </FestiveQuote>
-                <h2 className="task-heading">Du beschenkst …</h2>
-                <details className="reveal">
-                  <summary>Wichtelkind aufdecken</summary>
-                  <div className="recipient-name">
-                    {own.giving.recipient.name}
+                <WichtelReveal key={own.giving.id}>
+                  <div className="recipient-header">
+                    <h2 className="task-heading">Du beschenkst …</h2>
+                    <div className="recipient-name">
+                      {own.giving.recipient.name}
+                    </div>
                   </div>
-                  <h3>Wünsche</h3>
                   <WishList wishes={own.giving.recipient.wishes} />
-                </details>
+                </WichtelReveal>
               </>
             ) : (
               <>

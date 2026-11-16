@@ -34,22 +34,27 @@ function WishFields({ wish }: { wish?: Wish }) {
     </>
   );
 }
-function WishCard({
+function WishEntry({
   wish,
   number,
   children,
+  variant = "card",
 }: {
   wish: Wish;
   number: number;
   children?: ReactNode;
+  variant?: "card" | "row";
 }) {
+  const Title = variant === "row" ? "h4" : "h3";
   return (
-    <article className={`wish-card${children ? " own-wish" : ""}`}>
-      <div className="wish-card-heading">
-        <span className="wish-icon" aria-hidden="true">
-          <Gift size={20} strokeWidth={1.5} />
-        </span>
-        <h3>{wish.title}</h3>
+    <article className={`wish-${variant}${children ? " own-wish" : ""}`}>
+      <div className={`wish-${variant}-heading`}>
+        {variant === "card" && (
+          <span className="wish-icon" aria-hidden="true">
+            <Gift size={20} strokeWidth={1.5} />
+          </span>
+        )}
+        <Title>{wish.title}</Title>
         <span className="wish-number" aria-hidden="true">
           {String(number).padStart(2, "0")}
         </span>
@@ -72,15 +77,25 @@ function WishCard({
   );
 }
 export function WishList({ wishes }: { wishes: Wish[] }) {
-  if (!wishes.length) return <p className="muted">Noch keine Wünsche.</p>;
   return (
-    <ul className="wish-list">
-      {wishes.map((wish, index) => (
-        <li key={wish.id}>
-          <WishCard wish={wish} number={index + 1} />
-        </li>
-      ))}
-    </ul>
+    <section className="recipient-wishlist" aria-label="Wunschliste">
+      <div className="recipient-wishlist-heading">
+        <Gift size={18} strokeWidth={1.5} aria-hidden="true" />
+        <h3>Wunschliste</h3>
+        <span className="count">{wishes.length}</span>
+      </div>
+      {wishes.length ? (
+        <ul className="recipient-wishes">
+          {wishes.map((wish, index) => (
+            <li key={wish.id}>
+              <WishEntry wish={wish} number={index + 1} variant="row" />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="muted">Noch keine Wünsche.</p>
+      )}
+    </section>
   );
 }
 export function OwnWishes({
@@ -107,7 +122,7 @@ export function OwnWishes({
         <ul className="wish-list">
           {wishes.map((wish, index) => (
             <li key={wish.id}>
-              <WishCard wish={wish} number={index + 1}>
+              <WishEntry wish={wish} number={index + 1}>
                 <details>
                   <summary>Bearbeiten</summary>
                   <ActionForm
@@ -123,7 +138,7 @@ export function OwnWishes({
                     <input type="hidden" name="id" value={wish.id} />
                   </ActionForm>
                 </details>
-              </WishCard>
+              </WishEntry>
             </li>
           ))}
         </ul>
