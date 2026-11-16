@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { FestiveQuote } from "@/components/festive-quote";
-import { Users, CalendarDays, Coins, ShieldCheck } from "lucide-react";
+import { Users, CalendarDays, Coins, ShieldCheck, Gift } from "lucide-react";
 import { db } from "@/lib/db";
 import { currentMember } from "@/lib/access";
 import { groupAction } from "@/lib/actions";
@@ -34,7 +34,12 @@ export default async function GroupPage({
     include: {
       members: {
         orderBy: { createdAt: "asc" },
-        select: { id: true, name: true, organizer: true },
+        select: {
+          id: true,
+          name: true,
+          organizer: true,
+          _count: { select: { wishes: true } },
+        },
       },
       exclusions: member.organizer,
     },
@@ -135,11 +140,21 @@ export default async function GroupPage({
                   <span className={`avatar avatar-${i % 3}`}>
                     {person.name.slice(0, 1).toUpperCase()}
                   </span>
-                  <span>
+                  <span className="member-name">
                     {person.name}
                     {person.id === member.id && <small>Du</small>}
                     {person.organizer && <small>Organisator</small>}
                   </span>
+                  {person._count.wishes > 0 && (
+                    <span
+                      className="member-wishes"
+                      role="img"
+                      aria-label="Wünsche vorhanden"
+                      title="Hat mindestens einen Wunsch hinzugefügt"
+                    >
+                      <Gift size={16} strokeWidth={1.75} aria-hidden="true" />
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>

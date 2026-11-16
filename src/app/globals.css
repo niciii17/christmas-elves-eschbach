@@ -717,6 +717,22 @@ fieldset:disabled .button {
   padding: 3px 5px;
   border-radius: 4px;
 }
+.member-name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.member-wishes {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid #d8d5bc;
+  background: #f2eddf;
+  color: var(--green);
+}
 .avatar {
   width: 36px;
   height: 36px;

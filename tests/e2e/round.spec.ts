@@ -11,7 +11,7 @@ test("Familie erstellt eine Runde, tritt bei, wichtelt und kehrt per Link zurüc
 }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "Familienwichteln", exact: true }),
+    page.getByRole("heading", { name: "Schenken für Anfänger", exact: true }),
   ).toBeVisible();
   await page.screenshot({
     path: "test-results/home-desktop.png",
@@ -36,6 +36,10 @@ test("Familie erstellt eine Runde, tritt bei, wichtelt und kehrt per Link zurüc
   await page.getByRole("link", { name: /Link gesichert/ }).click();
   await expect(page).toHaveURL(/\/gruppe\//);
   const groupUrl = page.url();
+  const memberGifts = page
+    .getByRole("region", { name: "Eure Runde" })
+    .getByRole("img", { name: "Wünsche vorhanden" });
+  await expect(memberGifts).toHaveCount(0);
   await page.screenshot({
     path: "test-results/round-open.png",
     fullPage: true,
@@ -51,6 +55,10 @@ test("Familie erstellt eine Runde, tritt bei, wichtelt und kehrt per Link zurüc
   await ben.getByRole("button", { name: "Ich bin dabei" }).click();
   const benLink = await readLink(ben.locator(".share-box"));
   await ben.getByRole("link", { name: /Link gesichert/ }).click();
+  const benGifts = ben
+    .getByRole("region", { name: "Eure Runde" })
+    .getByRole("img", { name: "Wünsche vorhanden" });
+  await expect(benGifts).toHaveCount(0);
   await ben.getByText("＋ Wunsch hinzufügen", { exact: true }).click();
   await ben
     .getByLabel("Dein Wunsch", { exact: true })
@@ -67,6 +75,12 @@ test("Familie erstellt eine Runde, tritt bei, wichtelt und kehrt per Link zurüc
   await expect(
     ben.getByRole("heading", { name: "Ein besonderes Buch" }),
   ).toBeVisible();
+  await expect(benGifts).toHaveCount(1);
+  await page.reload();
+  await expect(memberGifts).toHaveCount(1);
+  await expect(
+    page.getByRole("heading", { name: "Ein besonderes Buch" }),
+  ).toHaveCount(0);
   const addWish = ben.locator(".add-wish");
   await addWish
     .getByLabel("Dein Wunsch", { exact: true })
@@ -80,6 +94,7 @@ test("Familie erstellt eine Runde, tritt bei, wichtelt und kehrt per Link zurüc
     }),
   ).toBeVisible();
   await page.reload();
+  await expect(memberGifts).toHaveCount(1);
   page.on("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Auslosen", exact: true }).click();
   await expect(page.getByText("● Ausgelost", { exact: true })).toBeVisible();
@@ -152,6 +167,27 @@ test("Familie erstellt eine Runde, tritt bei, wichtelt und kehrt per Link zurüc
   ).toBeVisible();
   await recovery.goto(replacement);
   await expect(recovery).toHaveURL(groupUrl);
+  const recoveryGifts = recovery
+    .getByRole("region", { name: "Eure Runde" })
+    .getByRole("img", { name: "Wünsche vorhanden" });
+  await expect(recoveryGifts).toHaveCount(1);
+  recovery.on("dialog", (dialog) => dialog.accept());
+  for (const [index, title] of [
+    "Ein neues Lieblingsbuch",
+    "Ein gemeinsamer Ausflug mit der Familie",
+  ].entries()) {
+    const wish = recovery.locator(".own-wish").filter({
+      has: recovery.getByRole("heading", { name: title, exact: true }),
+    });
+    await wish.getByText("Bearbeiten", { exact: true }).click();
+    await wish.getByRole("button", { name: "Wunsch entfernen" }).click();
+    await expect(
+      recovery.getByRole("heading", { name: title, exact: true }),
+    ).toHaveCount(0);
+    await expect(recoveryGifts).toHaveCount(index === 0 ? 1 : 0);
+  }
+  await page.reload();
+  await expect(memberGifts).toHaveCount(0);
   await benContext.close();
   await recoveryContext.close();
 });
